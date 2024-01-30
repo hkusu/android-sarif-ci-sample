@@ -41,7 +41,7 @@ jobs:
 #          sarif_file: ${{ runner.temp }}/qodana.sarif
 #          category: qodana:jvm-android
 
-        run: |
+      - run: |
           {
             file='${{ runner.temp }}/qodana/results/qodana.sarif.json'
             results="$(cat "$file" | jq -c '.runs[].results[] | { level, location: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine, message: .message.text, ruleId }')"
