@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun GreetingView(text: String) {
+fun  GreetingView(text: String) {
     Text(text = text)
 }
 
