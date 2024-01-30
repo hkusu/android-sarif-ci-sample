@@ -13,7 +13,7 @@ jobs:
       # https://www.jetbrains.com/help/qodana/github.html
       # contents: write # コードの自動修正機能を使わないなら（恐らく）不要
       # pull-requests: write # プルリクにサマリーをpostしない（post-pr-comment: false）なら不要
-      # checks: write # annotationしない（use-annotations: false）ならchecksは動かないので不要
+      checks: write # annotationしない（use-annotations: false）ならchecksは動かないので不要
 
       # 参考 https://docs.github.com/ja/code-security/code-scanning/integrating-with-code-scanning/uploading-a-sarif-file-to-github
       #     https://docs.github.com/ja/code-security/code-scanning/troubleshooting-code-scanning/resource-not-accessible
@@ -30,13 +30,44 @@ jobs:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodanaのダッシュボードと連携する場合
         with:
           post-pr-comment: false
-          use-annotations: false
+          #use-annotations: false
           pr-mode: false
-      - run: |
-          cat '${{ runner.temp }}/qodana/results/qodana.sarif.json' \
-            | jq 'del(.runs[].automationDetails)' \
-            > '${{ runner.temp }}/qodana.sarif'
-      - uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: ${{ runner.temp }}/qodana.sarif
-          category: qodana:jvm-android
+#      - run: |
+#          cat '${{ runner.temp }}/qodana/results/qodana.sarif.json' \
+#            | jq 'del(.runs[].automationDetails)' \
+#            > '${{ runner.temp }}/qodana.sarif'
+#      - uses: github/codeql-action/upload-sarif@v3
+#        with:
+#          sarif_file: ${{ runner.temp }}/qodana.sarif
+#          category: qodana:jvm-android
+
+        run: |
+          {
+            file='${{ runner.temp }}/qodana/results/qodana.sarif.json'
+            results="$(cat "$file" | jq -c '.runs[].results[] | { level, location: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine, message: .message.text, ruleId }')"
+          
+            IFS=$'\n'
+            for result in $results ; do
+              level="$(echo "$result" | jq -r '.level')"
+              location="$(echo "$result" | jq -r '.location')"
+              line="$(echo "$result" | jq '.line')"
+              message="$(echo "$result" | jq -r '.message')"
+              ruleId="$(echo "$result" | jq -r '.ruleId')"
+          
+              case "$level" in
+                'error')
+                  icon=':no_entry_sign:';;
+                'warning')
+                  icon=':warning:';;
+                'note')
+                  icon=':memo:';;
+                *) # default
+                  icon=':warning:'
+              esac     
+          
+              location_url="https://github.com/${{ github.repository }}/blob/${{ github.sha }}/${location}#L${line}-${line}"
+          
+              echo "- ${icon} line ${line} in [${location}](${location_url})"
+              echo "  - **\`${ruleId}\`** ${message}"
+            done
+          }  >> "$GITHUB_STEP_SUMMARY"
