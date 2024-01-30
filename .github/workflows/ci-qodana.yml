@@ -26,49 +26,49 @@ jobs:
         #   # ref: ${{ github.event.pull_request.head.sha }} # どのコードを解析するか。プルリクではheadでなくマージコミットでもよいと思う
         #   # fetch-depth: 0  # pr-mode のときに必要（0でない場合はエラーにはならないがプルリクでも全ファイル検査となる）
       - uses: JetBrains/qodana-action@v2023.3
-        env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodanaのダッシュボードとも連携する場合
+        # env:
+        #   QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodanaのダッシュボードとも連携する場合
         with:
-#          post-pr-comment: false
-          use-annotations: false # annotation 個数に制限があるのでここではoff
-#          pr-mode: false
-
-#      - run: |
-#          cat '${{ runner.temp }}/qodana/results/qodana.sarif.json' \
-#            | jq 'del(.runs[].automationDetails)' \
-#            > '${{ runner.temp }}/qodana.sarif'
-#      - uses: github/codeql-action/upload-sarif@v3
-#        with:
-#          sarif_file: ${{ runner.temp }}/qodana.sarif
-#          category: qodana:jvm-android
+          post-pr-comment: false
+          use-annotations: false
+          pr-mode: false
 
       - run: |
-          {
-            file='${{ runner.temp }}/qodana/results/qodana.sarif.json'
-            results="$(cat "$file" | jq -c '.runs[].results[] | { level, location: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine, message: .message.text, ruleId }')"
-          
-            IFS=$'\n'
-            for result in $results ; do
-              level="$(echo "$result" | jq -r '.level')"
-              location="$(echo "$result" | jq -r '.location')"
-              line="$(echo "$result" | jq '.line')"
-              message="$(echo "$result" | jq -r '.message')"
-              ruleId="$(echo "$result" | jq -r '.ruleId')"
-          
-              case "$level" in
-                'error')
-                  icon=':no_entry_sign:';;
-                'warning')
-                  icon=':warning:';;
-                'note')
-                  icon=':memo:';;
-                *) # default
-                  icon=':warning:'
-              esac     
-          
-              location_url="https://github.com/${{ github.repository }}/blob/${{ github.sha }}/${location}#L${line}-${line}"
-          
-              echo "- ${icon} line ${line} in [${location}](${location_url})"
-              echo "  - **\`${ruleId}\`** ${message}"
-            done
-          }  >> "$GITHUB_STEP_SUMMARY"
+          cat '${{ runner.temp }}/qodana/results/qodana.sarif.json' \
+            | jq 'del(.runs[].automationDetails)' \
+            > '${{ runner.temp }}/qodana.sarif'
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ runner.temp }}/qodana.sarif
+          category: qodana:jvm-android
+
+#      - run: |
+#          {
+#            file='${{ runner.temp }}/qodana/results/qodana.sarif.json'
+#            results="$(cat "$file" | jq -c '.runs[].results[] | { level, location: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine, message: .message.text, ruleId }')"
+#
+#            IFS=$'\n'
+#            for result in $results ; do
+#              level="$(echo "$result" | jq -r '.level')"
+#              location="$(echo "$result" | jq -r '.location')"
+#              line="$(echo "$result" | jq '.line')"
+#              message="$(echo "$result" | jq -r '.message')"
+#              ruleId="$(echo "$result" | jq -r '.ruleId')"
+#
+#              case "$level" in
+#                'error')
+#                  icon=':no_entry_sign:';;
+#                'warning')
+#                  icon=':warning:';;
+#                'note')
+#                  icon=':memo:';;
+#                *) # default
+#                  icon=':warning:'
+#              esac
+#
+#              location_url="https://github.com/${{ github.repository }}/blob/${{ github.sha }}/${location}#L${line}-${line}"
+#
+#              echo "- ${icon} line ${line} in [${location}](${location_url})"
+#              echo "  - **\`${ruleId}\`** ${message}"
+#            done
+#          }  >> "$GITHUB_STEP_SUMMARY"
