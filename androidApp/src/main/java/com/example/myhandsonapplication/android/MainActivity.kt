@@ -23,8 +23,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-        val password = "it is password"
     }
 }
 
@@ -40,16 +38,3 @@ fun DefaultPreview() {
         GreetingView("Hello, Android!")
     }
 }
-
-fun getName() {}
-
-fun hogera() {}
-
-
-fun Fuga() {}
-
-fun mogera() {}
-
-fun piyoraddd() {}
-
-fun piyora323() {}
