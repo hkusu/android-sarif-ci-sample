@@ -27,10 +27,10 @@ jobs:
         #   # fetch-depth: 0  # pr-mode のときに必要（0でない場合はエラーにはならないがプルリクでも全ファイル検査となる）
       - uses: JetBrains/qodana-action@v2023.3
         env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodanaのダッシュボードと連携する場合
-#        with:
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodanaのダッシュボードとも連携する場合
+        with:
 #          post-pr-comment: false
-#          use-annotations: false
+          use-annotations: false # annotation 個数に制限があるのでここではoff
 #          pr-mode: false
 
 #      - run: |
