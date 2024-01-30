@@ -2,36 +2,33 @@ name: Qodana CI
 
 on:
   push:
-    branches: [ "mainAAA" ]
+    branches: [main]
   pull_request:
-    branches: [ "mainAAA" ]
+    branches: [main]
 
 jobs:
-  check:
+  analyze:
     runs-on: ubuntu-latest
     permissions:
-      # https://www.jetbrains.com/help/qodana/github.html
-      # contents: write # コードの自動修正機能を使わないなら（恐らく）不要
-      # pull-requests: write # プルリクにサマリーをpostしない（post-pr-comment: false）なら不要
-      # checks: write # annotationしない（use-annotations: false）ならchecksは動かないので不要
-
-      # 参考 https://docs.github.com/ja/code-security/code-scanning/integrating-with-code-scanning/uploading-a-sarif-file-to-github
-      #     https://docs.github.com/ja/code-security/code-scanning/troubleshooting-code-scanning/resource-not-accessible
-      security-events: write # プルリクでは不要(pushではpublicリポジトリでもwrite権限が無いとactionがエラーとなる)
-      actions: read # privateリポジトリでは必要（権限ないとactionがエラーとなる）
-      contents: read # privateリポジトリでは必要（無いときの挙動は試してないがそもそもコードのチェックアウトで必要）
+      # for Qodana
+      pull-requests: write
+      checks: write
+      # for GitHub code scanning
+      security-events: write
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@v4
-        # with:
-        #   # ref: ${{ github.event.pull_request.head.sha }} # どのコードを解析するか。プルリクではheadでなくマージコミットでもよいと思う
-        #   # fetch-depth: 0  # pr-mode のときに必要（0でない場合はエラーにはならないがプルリクでも全ファイル検査となる）
+        with:
+          fetch-depth: 0
       - uses: JetBrains/qodana-action@v2023.3
         # env:
-        #   QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodanaのダッシュボードと連携する場合
+        #   QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodana Cloud と連携する場合
         with:
           post-pr-comment: false
           use-annotations: false
           pr-mode: false
+          additional-cache-key: qodana-2023.3-
       - run: |
           cat '${{ runner.temp }}/qodana/results/qodana.sarif.json' \
             | jq 'del(.runs[].automationDetails)' \

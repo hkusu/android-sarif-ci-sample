@@ -1,0 +1,68 @@
+name: Qodana Analyze # 下記 branches で指定のブランチ郡に本ワークフローを置くこと
+
+# 別途 qodana.yaml ファイルの配置も必要です
+#   参考: https://speakerdeck.com/hkusu/android-nojing-de-jie-xi-niokeru-sarif-huairunohuo-yong?slide=34
+# ただデフォルトのプロファイルだと誤検知が多い印象なので、カスタマイズしたプロファイルを利用した方がよいかもしれません
+#   参考: https://note.com/nttrtech/n/n1bf364bb2d86
+
+on:
+  pull_request:
+  push:
+    branches: # 検査対象のブランチ郡を指定
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    env:
+      QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodana Cloud と連携する場合は secrets にトークンを設定
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: JetBrains/qodana-action@v2023.3
+        with:
+          post-pr-comment: false # プルリクにサマリーを投稿する場合は true を指定（pull-requests: write 権限も必要）
+          use-annotations: ${{ github.event_name == 'push' && 'false' || 'true' }} # push 時は annotation のリンクで該当ファイルに遷移できない為 false
+          additional-cache-key: qodana-2023.3-${{ github.event_name == 'push' && github.ref || '' }} # プルリク open 時に cache が利用できるように
+          cache-default-branch-only:  ${{ github.event_name == 'push' && 'false' || 'true' }} # cache のサイズが大きい為、プルリクのブランチでは cache を作成しない
+      # Qodana Cloud と連携しない場合は代替として Job Summaries へ出力。プルリク時は annotation されているので push 時のみ
+      # GitHub Pages へデプロイしてもよいと思います
+      - if: env.QODANA_TOKEN == null && github.event_name == 'push'
+        run: |
+          {
+            file='${{ runner.temp }}/qodana/results/qodana.sarif.json'
+            results="$(cat "$file" | jq -c '.runs[].results[] | { level, location: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine, message: .message.text, ruleId }')"
+          
+            IFS=$'\n'
+            for result in $results ; do
+              level="$(echo "$result" | jq -r '.level')"
+              location="$(echo "$result" | jq -r '.location')"
+              line="$(echo "$result" | jq '.line')"
+              message="$(echo "$result" | jq -r '.message')"
+              ruleId="$(echo "$result" | jq -r '.ruleId')"
+          
+              case "$level" in
+                'error')
+                  icon=':no_entry_sign:';;
+                'warning')
+                  icon=':warning:';;
+                'note')
+                  icon=':memo:';;
+                *)
+                  icon=':grey_question:'
+              esac     
+          
+              location_url="https://github.com/${{ github.repository }}/blob/${{ github.sha }}/${location}#L${line}-${line}"
+          
+              echo "- ${icon} line ${line} in [${location}](${location_url})"
+              echo "  - **\`${ruleId}\`** ${message}"
+            done
+          }  >> "$GITHUB_STEP_SUMMARY"
