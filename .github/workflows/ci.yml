@@ -39,7 +39,7 @@ jobs:
         continue-on-error: true
       - run: |
           cat './androidApp/build/reports/ktlint-results.sarif' \
-            | jq '.runs[].results[].locations[].physicalLocation.artifactLocation.uri |= ltrimstr("work/sarif-android-sample7/sarif-android-sample7/")' \
+            | jq '.runs[].results[].locations[].physicalLocation.artifactLocation.uri |= ltrimstr("work/android-sarif-ci-sample/android-sarif-ci-sample/")' \
             > '${{ runner.temp }}/ktlint-results.sarif'
       - uses: github/codeql-action/upload-sarif@v3
         with:
@@ -47,7 +47,7 @@ jobs:
           category: ktlint:androidApp
       - run: |
           cat './shared/build/reports/ktlint-results.sarif' \
-            | jq '.runs[].results[].locations[].physicalLocation.artifactLocation.uri |= ltrimstr("work/hkusu-sarif-android-sample3/hkusu-sarif-android-sample3/")' \
+            | jq '.runs[].results[].locations[].physicalLocation.artifactLocation.uri |= ltrimstr("work/android-sarif-ci-sample/android-sarif-ci-sample/")' \
             > '${{ runner.temp }}/ktlint-results.sarif'
       - uses: github/codeql-action/upload-sarif@v3
         with:
