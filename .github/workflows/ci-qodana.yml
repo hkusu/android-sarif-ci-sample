@@ -13,7 +13,7 @@ jobs:
       # https://www.jetbrains.com/help/qodana/github.html
       # contents: write # コードの自動修正機能を使わないなら（恐らく）不要
       # pull-requests: write # プルリクにサマリーをpostしない（post-pr-comment: false）なら不要
-      checks: write # annotationしない（use-annotations: false）ならchecksは動かないので不要
+      # checks: write # annotationしない（use-annotations: false）ならchecksは動かないので不要
 
       # 参考 https://docs.github.com/ja/code-security/code-scanning/integrating-with-code-scanning/uploading-a-sarif-file-to-github
       #     https://docs.github.com/ja/code-security/code-scanning/troubleshooting-code-scanning/resource-not-accessible
@@ -28,10 +28,11 @@ jobs:
       - uses: JetBrains/qodana-action@v2023.3
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodanaのダッシュボードと連携する場合
-        with:
-          post-pr-comment: false
-          #use-annotations: false
-          pr-mode: false
+#        with:
+#          post-pr-comment: false
+#          use-annotations: false
+#          pr-mode: false
+
 #      - run: |
 #          cat '${{ runner.temp }}/qodana/results/qodana.sarif.json' \
 #            | jq 'del(.runs[].automationDetails)' \
