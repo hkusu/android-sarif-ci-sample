@@ -1,4 +1,4 @@
-name: My CI 2
+name: CI
 
 on:
   push:
@@ -10,10 +10,9 @@ jobs:
   analyze:
     runs-on: ubuntu-latest
     permissions:
-      # 参考 https://docs.github.com/ja/code-security/code-scanning/integrating-with-code-scanning/uploading-a-sarif-file-to-github
-      security-events: write # プルリクでは不要 https://docs.github.com/ja/code-security/code-scanning/troubleshooting-code-scanning/resource-not-accessible
-      actions: read # privateリポジトリでは必要
-      contents: read # privateリポジトリでは必要
+      security-events: write
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -29,12 +28,12 @@ jobs:
 #      - run: echo '${{ github.workspace }}'
 #      - run: echo '${{ runner.temp }}'
 
-#      - run: ./gradlew androidApp:lintDebug
-#        continue-on-error: true
-#      - uses: github/codeql-action/upload-sarif@v3
-#        with:
-#          sarif_file: ./androidApp/build/reports/lint-results-debug.sarif
-#          category: android-lint:debug
+      - run: ./gradlew androidApp:lintDebug
+        continue-on-error: true
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ./androidApp/build/reports/lint-results-debug.sarif
+          category: android-lint:debug
 
       - run: ./gradlew ktlintCheck --continue
         continue-on-error: true
@@ -42,28 +41,27 @@ jobs:
           cat './androidApp/build/reports/ktlint-results.sarif' \
             | jq '.runs[].results[].locations[].physicalLocation.artifactLocation.uri |= ltrimstr("work/sarif-android-sample7/sarif-android-sample7/")' \
             > '${{ runner.temp }}/ktlint-results.sarif'
-#      - uses: github/codeql-action/upload-sarif@v3
-#        with:
-#          sarif_file: ${{ runner.temp }}/ktlint-results.sarif
-#          category: ktlint:androidApp
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ runner.temp }}/ktlint-results.sarif
+          category: ktlint:androidApp
+      - run: |
+          cat './shared/build/reports/ktlint-results.sarif' \
+            | jq '.runs[].results[].locations[].physicalLocation.artifactLocation.uri |= ltrimstr("work/hkusu-sarif-android-sample3/hkusu-sarif-android-sample3/")' \
+            > '${{ runner.temp }}/ktlint-results.sarif'
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ runner.temp }}/ktlint-results.sarif
+          category: ktlint:shared
 
-#      - run: |
-#          cat './shared/build/reports/ktlint-results.sarif' \
-#            | jq '.runs[].results[].locations[].physicalLocation.artifactLocation.uri |= ltrimstr("work/hkusu-sarif-android-sample3/hkusu-sarif-android-sample3/")' \
-#            > '${{ runner.temp }}/ktlint-results.sarif'
-#      - uses: github/codeql-action/upload-sarif@v3
-#        with:
-#          sarif_file: ${{ runner.temp }}/ktlint-results.sarif
-#          category: ktlint:shared
-
-#      - uses: MobSF/mobsfscan@main
-#        with:
-#          args: . --sarif --output results.sarif
-#        continue-on-error: true
-#      - uses: github/codeql-action/upload-sarif@v3
-#        with:
-#          sarif_file: results.sarif
-#          category: mobsfscan
+      - uses: MobSF/mobsfscan@main
+        with:
+          args: . --sarif --output results.sarif
+        continue-on-error: true
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+          category: mobsfscan
 
       - if: failure()
         run: |
@@ -92,7 +90,8 @@ jobs:
             echo "::${message_level} file=${location},line=${line},title=${ruleId}::${message}"
           done
 
-      - run: |
+      - if: failure()
+        run: |
           {
             file='${{ runner.temp }}/ktlint-results.sarif'
             results="$(cat "$file" | jq -c '.runs[].results[] | { level, location: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine, message: .message.text, ruleId }')"

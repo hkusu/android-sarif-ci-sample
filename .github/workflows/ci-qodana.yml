@@ -2,12 +2,12 @@ name: Qodana CI
 
 on:
   push:
-    branches: [ "mainAAA" ]
+    branches: [main]
   pull_request:
-    branches: [ "mainAAA" ]
+    branches: [main]
 
 jobs:
-  check:
+  analyze:
     runs-on: ubuntu-latest
     permissions:
       # https://www.jetbrains.com/help/qodana/github.html
