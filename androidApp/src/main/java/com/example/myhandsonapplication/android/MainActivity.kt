@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.myhandsonapplication.Greeting
 
-class MainActivity : ComponentActivity() {
+class  MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -33,7 +33,7 @@ fun GreetingView(text: String) {
 
 @Preview
 @Composable
-fun DefaultPreview() {
+fun DefaultPreviewAAA() {
     MyApplicationTheme {
         GreetingView("Hello, Android!")
     }
