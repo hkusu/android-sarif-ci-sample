@@ -22,9 +22,9 @@ jobs:
       contents: read # privateリポジトリでは必要（無いときの挙動は試してないがそもそもコードのチェックアウトで必要）
     steps:
       - uses: actions/checkout@v4
-#        with:
+        with:
 #          ref: ${{ github.event.pull_request.head.sha }} # どのコードを解析するか。プルリクではheadでなくマージコミットでもよいと思う
-#          fetch-depth: 0  # プルリクで利用する時に必要（0でない場合もエラーにはならないが、pr-mode が true のときはプルリク変更ファイルで指摘が絞れず、また pr-mode が false の場合でも全件でもない中途半端な件数になる）
+           fetch-depth: 0  # プルリクで利用する時に必要（0でない場合もエラーにはならないが、pr-mode が true のときはプルリク変更ファイルで指摘が絞れず、また pr-mode に関わらず全件でもない中途半端な件数になる）
       - uses: JetBrains/qodana-action@v2023.3
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodanaのダッシュボードとも連携する場合
