@@ -57,3 +57,5 @@ fun   MyApplicationTheme(
         content = content,
     )
 }
+
+fun Hoge(){}
