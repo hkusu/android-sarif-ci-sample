@@ -33,6 +33,7 @@ jobs:
           use-annotations: false
           pr-mode: false
 
+
       - run: |
           cat '${{ runner.temp }}/qodana/results/qodana.sarif.json' \
             | jq 'del(.runs[].automationDetails)' \
