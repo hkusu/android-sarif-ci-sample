@@ -14,7 +14,9 @@ jobs:
       # contents: write # コードの自動修正機能を使わないなら（恐らく）不要
       # pull-requests: write # プルリクにサマリーをpostしない（post-pr-comment: false）なら不要
       # checks: write # checks イベントの作成と annotation（use-annotations: true）で必要
-      #   なくても annotation はされるが Checks API を使わない方式らしくワークフローコマンドになり件数の制限があるかも（ログでその旨の警告が出る
+      #   なくても annotation はされるが Checks API を使わない方式らしくワークフローコマンドになりエラーレベル毎に10件までの制限がある（ログでもその旨の警告が出る
+      #     Checks API を利用する方式の場合、プルリクのファイルタブでも100件超のannotationがつくのは確認できた
+      #       だだpush時のリンクがおかしくて指定のファイルにリンクしてくれない
       #   use-annotations: false の場合は checks イベントも作成されない
       # 参考 https://docs.github.com/ja/code-security/code-scanning/integrating-with-code-scanning/uploading-a-sarif-file-to-github
       #     https://docs.github.com/ja/code-security/code-scanning/troubleshooting-code-scanning/resource-not-accessible
