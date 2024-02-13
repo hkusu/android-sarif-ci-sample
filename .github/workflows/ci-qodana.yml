@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
         #   # ref: ${{ github.event.pull_request.head.sha }} # どのコードを解析するか。プルリクではheadでなくマージコミットでもよいと思う
-          fetch-depth: 0  # pr-mode のときに必要（0でない場合はエラーにはならないがプルリクでも全ファイル検査となる）
+        #  fetch-depth: 0  # pr-mode のときに必要（0でない場合はエラーにはならないがプルリクでも全ファイル検査となる）
       - uses: JetBrains/qodana-action@v2023.3
         # env:
         #   QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodanaのダッシュボードとも連携する場合
@@ -32,6 +32,7 @@ jobs:
           post-pr-comment: false
           use-annotations: false
           pr-mode: false
+          use-caches: false
 
       - run: |
           cat '${{ runner.temp }}/qodana/results/qodana.sarif.json' \
