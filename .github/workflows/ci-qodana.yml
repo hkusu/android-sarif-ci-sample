@@ -13,8 +13,9 @@ jobs:
       # https://www.jetbrains.com/help/qodana/github.html
       # contents: write # コードの自動修正機能を使わないなら（恐らく）不要
       # pull-requests: write # プルリクにサマリーをpostしない（post-pr-comment: false）なら不要
-      # checks: write # annotationしない（use-annotations: false）ならchecksは動かないので不要
-
+      # checks: write # checks イベントの作成と annotation（use-annotations: true）で必要
+      #   なくても annotation はされるが Checks API を使わない方式らしくワークフローコマンドになり件数の制限があるかも（ログでその旨の警告が出る
+      #   use-annotations: false の場合は checks イベントも作成されない
       # 参考 https://docs.github.com/ja/code-security/code-scanning/integrating-with-code-scanning/uploading-a-sarif-file-to-github
       #     https://docs.github.com/ja/code-security/code-scanning/troubleshooting-code-scanning/resource-not-accessible
       security-events: write # プルリクでは不要(pushではpublicリポジトリでもwrite権限が無いとactionがエラーとなる)
@@ -28,10 +29,10 @@ jobs:
       - uses: JetBrains/qodana-action@v2023.3
         # env:
         #   QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodanaのダッシュボードとも連携する場合
-#        with:
-#          post-pr-comment: false
-#          use-annotations: false
-#          pr-mode: false
+        with:
+          post-pr-comment: false
+          use-annotations: false
+          pr-mode: false
 #          use-caches: false
 
       - run: |
