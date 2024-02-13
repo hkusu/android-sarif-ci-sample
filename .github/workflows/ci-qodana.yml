@@ -29,9 +29,9 @@ jobs:
         # env:
         #   QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodanaのダッシュボードとも連携する場合
         with:
-#          post-pr-comment: false
-#          use-annotations: true
-#          pr-mode: false
+          post-pr-comment: false
+          use-annotations: false
+          pr-mode: false
           use-caches: false
 
       - run: |
