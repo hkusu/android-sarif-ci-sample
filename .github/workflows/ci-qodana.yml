@@ -30,7 +30,7 @@ jobs:
         #   QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodanaのダッシュボードとも連携する場合
         with:
           post-pr-comment: false
-          use-annotations: true
+          use-annotations: false
           pr-mode: false
 
       - run: |
