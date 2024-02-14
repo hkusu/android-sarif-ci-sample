@@ -27,15 +27,16 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun GreetingView (text: String) {
+fun GreetingView (text: String, text2: String) {
     Text(text = text)
+    Text(text = text2)
 }
 
 @Preview
 @Composable
 fun DefaultPreview() {
     MyApplicationTheme {
-        GreetingView("Hello, Android!")
+        GreetingView("Hello, Android!", "abc")
     }
 }
 
