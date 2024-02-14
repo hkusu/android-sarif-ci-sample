@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background,
                 ) {
-                    GreetingView(Greeting().greet())
+                    GreetingView2(Greeting().greet(),"abc")
                 }
             }
         }
@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun GreetingView (text: String, text2: String) {
+fun GreetingView2 (text: String, text2: String) {
     Text(text = text)
     Text(text = text2)
 }
@@ -36,7 +36,7 @@ fun GreetingView (text: String, text2: String) {
 @Composable
 fun DefaultPreview() {
     MyApplicationTheme {
-        GreetingView("Hello, Android!", "abc")
+        GreetingView2("Hello, Android!", "abc")
     }
 }
 

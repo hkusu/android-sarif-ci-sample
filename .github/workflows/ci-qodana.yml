@@ -24,6 +24,14 @@ jobs:
       actions: read # privateリポジトリでは必要（権限ないとactionがエラーとなる）
       contents: read # privateリポジトリでは必要（無いときの挙動は試してないがそもそもコードのチェックアウトで必要）
     steps:
+
+      - run: env
+
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
       - uses: actions/checkout@v4
         with:
         #   # ref: ${{ github.event.pull_request.head.sha }} # どのコードを解析するか。プルリクではheadでなくマージコミットでもよいと思う
