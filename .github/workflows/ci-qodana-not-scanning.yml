@@ -16,7 +16,7 @@ jobs:
       contents: read
       checks: write
     env:
-      QODANA_TOKEN: ${{ secrets.QODANA_TOKENAAA }} # Qodana Cloud と連携する場合
+      QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodana Cloud と連携する場合
     steps:
       - uses: actions/checkout@v4
         with:
