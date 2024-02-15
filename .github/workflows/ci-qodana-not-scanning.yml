@@ -1,5 +1,10 @@
 name: Qodana Analyze # 下記 branches で指定のブランチ郡に本ワークフローを置くこと
 
+# 別途 qodana.yaml ファイルの配置も必要です
+#   参考: https://speakerdeck.com/hkusu/android-nojing-de-jie-xi-niokeru-sarif-huairunohuo-yong?slide=34
+# ただデフォルトのプロファイルだと誤検知が多い印象なので、カスタマイズしたプロファイルを利用した方がよいかもしれません
+#   参考: https://note.com/nttrtech/n/n1bf364bb2d86
+
 on:
   pull_request:
   push:
@@ -16,8 +21,8 @@ jobs:
     permissions:
       contents: read
       checks: write
-#    env:
-#      QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodana Cloud と連携する場合は secrets にトークンを設定
+    env:
+      QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodana Cloud と連携する場合は secrets にトークンを設定
     steps:
       - uses: actions/checkout@v4
         with:
