@@ -42,9 +42,10 @@ jobs:
                 'warning')
                   icon=':warning:';;
                 'note')
-                  icon=':memo:';;
-                #*) # default
-                #  icon=':warning:'
+                  #icon=':memo:';;
+                  icon=':grey_question:'
+                *)
+                  icon=':grey_question:'
               esac     
           
               location_url="https://github.com/${{ github.repository }}/blob/${{ github.sha }}/${location}#L${line}-${line}"
