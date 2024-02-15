@@ -38,5 +38,3 @@ fun DefaultPreview() {
         GreetingView("Hello, Android!")
     }
 }
-
-fun hoge() {}
