@@ -26,6 +26,7 @@ jobs:
           post-pr-comment: false
           use-annotations: ${{ github.event_name != 'push' && 'true' || 'false' }}
           additional-cache-key: qodana-2023.3-
+          cache-default-branch-only: true
       - if: github.event_name == 'push' # Qodana Cloud と連携しない場合は Job Summaries へ出力
         run: |
           {
@@ -46,7 +47,7 @@ jobs:
                 'warning')
                   icon=':warning:';;
                 'note')
-                  icon=':grey_question:';;
+                  icon=':memo:';;
                 *)
                   icon=':grey_question:'
               esac     
