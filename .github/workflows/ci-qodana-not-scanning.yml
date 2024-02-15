@@ -22,7 +22,7 @@ jobs:
           post-pr-comment: false
           use-annotations: ${{ github.event_name != 'push' && 'true' || 'false' }}
           additional-cache-key: qodana-2023.3-
-      - if: github.event_name == 'push'
+      - if: github.event_name == 'push' # Qodana Cloud と連携しない場合は Job Summaries へ出力
         run: |
           {
             file='${{ runner.temp }}/qodana/results/qodana.sarif.json'
@@ -43,8 +43,8 @@ jobs:
                   icon=':warning:';;
                 'note')
                   icon=':memo:';;
-                *) # default
-                  icon=':warning:'
+                #*) # default
+                #  icon=':warning:'
               esac     
           
               location_url="https://github.com/${{ github.repository }}/blob/${{ github.sha }}/${location}#L${line}-${line}"
