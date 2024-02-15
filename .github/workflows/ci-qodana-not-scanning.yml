@@ -46,7 +46,7 @@ jobs:
                 'warning')
                   icon=':warning:';;
                 'note')
-                  icon=':grey_question:'
+                  icon=':grey_question:';;
                 *)
                   icon=':grey_question:'
               esac     
