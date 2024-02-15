@@ -2,9 +2,9 @@ name: CodeQL CI
 
 on:
   push:
-    branches: [main]
+    branches: [AAAmain]
   pull_request:
-    branches: [main]
+    branches: [AAAmain]
 
 jobs:
   analyze:

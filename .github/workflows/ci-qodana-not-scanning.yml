@@ -26,8 +26,8 @@ jobs:
           post-pr-comment: false
           use-annotations: ${{ github.event_name != 'push' && 'true' || 'false' }}
           additional-cache-key: qodana-2023.3-
-          cache-default-branch-only: true
-      - if: github.event_name == 'push' # Qodana Cloud と連携しない場合は Job Summaries へ出力
+          cache-default-branch-only:  ${{ github.event_name != 'push' && 'true' || 'false' }}
+      - if: github.event_name == 'push' # Qodana Cloud と連携しない場合は代替として Job Summaries へ出力
         run: |
           {
             file='${{ runner.temp }}/qodana/results/qodana.sarif.json'
