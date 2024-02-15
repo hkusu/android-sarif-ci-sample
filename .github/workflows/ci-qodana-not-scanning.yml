@@ -1,9 +1,13 @@
-name: Qodana CI
+name: Qodana
 
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   qodana:
@@ -42,7 +46,6 @@ jobs:
                 'warning')
                   icon=':warning:';;
                 'note')
-                  #icon=':memo:';;
                   icon=':grey_question:'
                 *)
                   icon=':grey_question:'
