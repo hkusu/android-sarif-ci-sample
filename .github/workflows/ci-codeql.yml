@@ -2,39 +2,28 @@ name: CodeQL CI
 
 on:
   push:
-    branches: [mainAAA]
+    branches: [main]
   pull_request:
-    branches: [mainAAA]
+    branches: [main]
 
 jobs:
   analyze:
     runs-on: ubuntu-latest
     permissions:
-      # required for all workflows
       security-events: write
-      # only required for workflows in private repositories
       actions: read
       contents: read
     steps:
       - uses: actions/checkout@v4
-
       - uses: github/codeql-action/init@v3
         with:
           languages: java-kotlin
-
       - uses: actions/setup-java@v3
         with:
           distribution: zulu
           java-version: 17
-
       # - uses: github/codeql-action/autobuild@v3
       - run: ./gradlew assembleDebug
-
       - uses: github/codeql-action/analyze@v3
         with:
           category: codeql:java-kotlin
-
-#      - uses: actions/upload-artifact@v3
-#        with:
-#          path: /home/runner/work/sarif-android-sample7/results
-#          # path: /home/runner/work/sarif-android-sample/results/java.sarif

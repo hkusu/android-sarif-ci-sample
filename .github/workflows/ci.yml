@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [mainAAA]
+    branches: [main]
   pull_request:
-    branches: [mainAAA]
+    branches: [main]
 
 jobs:
   analyze:
@@ -15,26 +15,16 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-java@v3
         with:
           distribution: zulu
           java-version: 17
-
-#      - name: Dump GitHub context
-#        env:
-#          GITHUB_CONTEXT: ${{ toJson(github) }}
-#        run: echo "$GITHUB_CONTEXT"
-#      - run: echo '${{ github.workspace }}'
-#      - run: echo '${{ runner.temp }}'
-
       - run: ./gradlew androidApp:lintDebug
         continue-on-error: true
       - uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ./androidApp/build/reports/lint-results-debug.sarif
           category: android-lint:debug
-
       - run: ./gradlew ktlintCheck --continue
         continue-on-error: true
       - run: |
@@ -53,7 +43,6 @@ jobs:
         with:
           sarif_file: ${{ runner.temp }}/ktlint-results.sarif
           category: ktlint:shared
-
       - uses: MobSF/mobsfscan@main
         with:
           args: . --sarif --output results.sarif
@@ -62,66 +51,3 @@ jobs:
         with:
           sarif_file: results.sarif
           category: mobsfscan
-
-      - if: failure()
-        run: |
-          file='${{ runner.temp }}/ktlint-results.sarif'
-          results="$(cat "$file" | jq -c '.runs[].results[] | { level, location: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine, message: .message.text, ruleId }')"
-
-          IFS=$'\n'
-          for result in $results ; do
-            level="$(echo "$result" | jq -r '.level')"
-            location="$(echo "$result" | jq -r '.location')"
-            line="$(echo "$result" | jq '.line')"
-            message="$(echo "$result" | jq -r '.message')"
-            ruleId="$(echo "$result" | jq -r '.ruleId')"
-
-            case "$level" in
-              'error')
-                message_level='error';;
-              'warning')
-                message_level='warning';;
-              'note')
-                message_level='notice';;
-              *) # default
-                message_level='warning'
-            esac          
-          
-            echo "::${message_level} file=${location},line=${line},title=${ruleId}::${message}"
-          done
-
-      - if: failure()
-        run: |
-          {
-            file='${{ runner.temp }}/ktlint-results.sarif'
-            results="$(cat "$file" | jq -c '.runs[].results[] | { level, location: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine, message: .message.text, ruleId }')"
-          
-            IFS=$'\n'
-            for result in $results ; do
-              level="$(echo "$result" | jq -r '.level')"
-              location="$(echo "$result" | jq -r '.location')"
-              line="$(echo "$result" | jq '.line')"
-              message="$(echo "$result" | jq -r '.message')"
-              ruleId="$(echo "$result" | jq -r '.ruleId')"
-          
-              case "$level" in
-                'error')
-                  icon=':no_entry_sign:';;
-                'warning')
-                  icon=':warning:';;
-                'note')
-                  icon=':memo:';;
-                *) # default
-                  icon=':warning:'
-              esac     
-          
-              location_url="https://github.com/${{ github.repository }}/blob/${{ github.sha }}/${location}#L${line}-${line}"
-          
-              echo "- ${icon} line ${line} in [${location}](${location_url})"
-              echo "  - **\`${ruleId}\`** ${message}"
-            done
-          }  >> "$GITHUB_STEP_SUMMARY"
-
-#      - uses: actions/upload-artifact@v3
-#        with:
-#          path: 'androidApp/build/reports/ktlint-results.sarif'
