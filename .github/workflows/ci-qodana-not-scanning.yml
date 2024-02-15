@@ -1,35 +1,35 @@
-name: Qodana
+name: Qodana Analyze # 下記 branches で指定のブランチ郡に本ワークフローを置くこと
 
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: # 検査対象のブランチ郡を指定
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
-  qodana:
+  analyze:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       checks: write
-    env:
-      QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodana Cloud と連携する場合
+#    env:
+#      QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }} # Qodana Cloud と連携する場合は secrets にトークンを設定
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: JetBrains/qodana-action@v2023.3
-#        env:
-#           QODANA_TOKEN: ${{ secrets.QODANA_TOKENAAA }} # Qodana Cloud と連携する場合
         with:
-          post-pr-comment: false
-          use-annotations: ${{ github.event_name == 'push' && 'false' || 'true' }}
-          additional-cache-key: qodana-2023.3-${{ github.event_name == 'push' && github.ref || '' }}
-          cache-default-branch-only:  ${{ github.event_name == 'push' && 'false' || 'true' }}
-      - if: env.QODANA_TOKEN == null && github.event_name == 'push' # Qodana Cloud と連携しない場合は代替として Job Summaries へ出力
+          post-pr-comment: false # プルリクにサマリーを投稿する場合は true を指定（pull-requests: write 権限も必要）
+          use-annotations: ${{ github.event_name == 'push' && 'false' || 'true' }} # push 時は annotation のリンクで該当ファイルに遷移できない為 false
+          additional-cache-key: qodana-2023.3-${{ github.event_name == 'push' && github.ref || '' }} # プルリク open 時に cache が利用できるように
+          cache-default-branch-only:  ${{ github.event_name == 'push' && 'false' || 'true' }} # cache のサイズが大きい為、プルリクのブランチでは cache を作成しない
+      # Qodana Cloud と連携しない場合は代替として Job Summaries へ出力。プルリク時は annotation されているので push 時のみ
+      - if: env.QODANA_TOKEN == null && github.event_name == 'push'
         run: |
           {
             file='${{ runner.temp }}/qodana/results/qodana.sarif.json'
