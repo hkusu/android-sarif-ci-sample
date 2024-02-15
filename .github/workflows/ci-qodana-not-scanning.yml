@@ -34,6 +34,7 @@ jobs:
           additional-cache-key: qodana-2023.3-${{ github.event_name == 'push' && github.ref || '' }} # プルリク open 時に cache が利用できるように
           cache-default-branch-only:  ${{ github.event_name == 'push' && 'false' || 'true' }} # cache のサイズが大きい為、プルリクのブランチでは cache を作成しない
       # Qodana Cloud と連携しない場合は代替として Job Summaries へ出力。プルリク時は annotation されているので push 時のみ
+      # GitHub Pages へデプロイしてもよいと思います
       - if: env.QODANA_TOKEN == null && github.event_name == 'push'
         run: |
           {
