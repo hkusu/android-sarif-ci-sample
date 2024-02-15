@@ -15,19 +15,21 @@ jobs:
     permissions:
       contents: read
       checks: write
+    env:
+      QODANA_TOKEN: ${{ secrets.QODANA_TOKENAAA }} # Qodana Cloud と連携する場合
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: JetBrains/qodana-action@v2023.3
-        env:
-           QODANA_TOKEN: ${{ secrets.QODANA_TOKENAAA }} # Qodana Cloud と連携する場合
+#        env:
+#           QODANA_TOKEN: ${{ secrets.QODANA_TOKENAAA }} # Qodana Cloud と連携する場合
         with:
           post-pr-comment: false
           use-annotations: ${{ github.event_name == 'push' && 'false' || 'true' }}
           additional-cache-key: qodana-2023.3-${{ github.event_name == 'push' && github.ref || '' }}
           cache-default-branch-only:  ${{ github.event_name == 'push' && 'false' || 'true' }}
-      - if: ${{ secrets.QODANA_TOKENAAA == null && github.event_name == 'push' }} # Qodana Cloud と連携しない場合は代替として Job Summaries へ出力
+      - if: env.QODANA_TOKEN == null && github.event_name == 'push' # Qodana Cloud と連携しない場合は代替として Job Summaries へ出力
         run: |
           {
             file='${{ runner.temp }}/qodana/results/qodana.sarif.json'
