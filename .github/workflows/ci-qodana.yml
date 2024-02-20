@@ -11,8 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       # for Qodana
-      pull-requests: write
-      checks: write
+      # pull-requests: write
+      # checks: write
       # for GitHub code scanning
       security-events: write
       actions: read
