@@ -13,10 +13,6 @@ jobs:
       security-events: write
       actions: read
       contents: read
-
-      pages: write
-      id-token: write
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v3
@@ -55,13 +51,3 @@ jobs:
         with:
           sarif_file: results.sarif
           category: mobsfscan
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./androidApp/build/reports
-
-      - uses: actions/deploy-pages@v4
-        id: deploy
-
-      - run: |
-          echo '${{steps.deploy.outputs.page_url}}'
