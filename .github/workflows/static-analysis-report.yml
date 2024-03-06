@@ -1,0 +1,84 @@
+name: Static Analysis Report
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: 'github-pages'
+  cancel-in-progress: false # do not cancel deploy
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # for checkout
+      pages: write # for pages action
+      id-token: write # for pages action
+    environment:
+      name: 'github-pages'
+      url: ${{steps.deploy.outputs.page_url}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 17
+      - run: |
+          mkdir -p '${{ runner.temp }}/reports/android-lint'
+          mkdir '${{ runner.temp }}/reports/ktlint'
+          mkdir '${{ runner.temp }}/reports/mobsfscan'
+          mkdir '${{ runner.temp }}/reports/qodana'
+      - run: ./gradlew androidApp:lintDebug
+        continue-on-error: true
+      - run: |
+          # lint の設定で checkDependencies が有効になっている前提で1ファイルのみ処理
+          find . -regex '^.*/build/reports/lint-results.*\.html$' -type f | head -1 | while read file_path; do
+            cp "$file_path" '${{ runner.temp }}/reports/android-lint/index.html'
+          done
+      - run: ./gradlew ktlintCheck --continue
+        continue-on-error: true
+      - run: |
+          find . -regex '^.*/build/reports/ktlint-results\.html$' -type f | while read file_path; do
+            module="$(echo "$file_path" | awk '{gsub(/^\.\/|\/build\/.*$/,"")}1')"
+            mkdir -p "${{ runner.temp }}/reports/ktlint/${module}" # specify -p option to support subdirectories
+            cp "$file_path" "${{ runner.temp }}/reports/ktlint/${module}/index.html"
+            echo "<li><a href=\"./ktlint/${module}/?${{ github.run_id }}\">ktlint(${module})</a></li>" >> '${{ runner.temp }}/reports/ktlint.html'
+          done
+      - uses: MobSF/mobsfscan@main
+        with:
+          args: . --html --output '${{ runner.temp }}/reports/mobsfscan/index.html'
+        continue-on-error: true
+      - uses: JetBrains/qodana-action@v2023.3
+        with:
+          use-annotations: false
+      - run: cp -r '${{ runner.temp }}/qodana/results/report/'* '${{ runner.temp }}/reports/qodana/'
+      - run: |
+          cat << EOF > '${{ runner.temp }}/reports/index.html'
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8" />
+            </head>
+            <body bgcolor="#FFFAFA">
+              <h2>reports</h2>
+              <p>
+                This page was generated in <i>$(TZ=UTC-9 date '+%Y/%m/%d %H:%M')</i> based on <a href="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"><i>$(sha='${{ github.sha }}';echo ${sha:0:6})</i></a> commit.<br />
+                Reload this page to see the latest content.
+              </p>
+              <p>
+                <ul>
+                  <li><a href="./android-lint/?${{ github.run_id }}">Android Lint</a></li>
+          $(cat '${{ runner.temp }}/reports/ktlint.html')
+                  <li><a href="./mobsfscan/?${{ github.run_id }}">mobsfscan</a></li>
+                  <li><a href="./qodana/?${{ github.run_id }}">Qodana</a></li>
+                </ul>
+              </p>
+            </body>
+          </html>
+          EOF
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ runner.temp }}/reports
+      - uses: actions/deploy-pages@v4
+        id: deploy

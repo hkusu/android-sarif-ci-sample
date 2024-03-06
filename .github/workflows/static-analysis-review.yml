@@ -1,0 +1,51 @@
+name: Static Analysis Review
+
+on: pull_request
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # for checkout
+      checks: write # for mobsfscan checks
+      pull-requests: write # for review comment
+    env:
+      REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # for Qodana pr-mode
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 17
+      - uses: reviewdog/action-setup@v1
+      - run: ./gradlew androidApp:lintDebug
+        continue-on-error: true
+      - run: |
+          find . -regex '^.*/build/reports/lint-results.*\.sarif$' -type f | while read file_path; do
+            reviewdog -f=sarif -reporter=github-pr-review < "$file_path"
+          done
+      - run: ./gradlew ktlintCheck --continue
+        continue-on-error: true
+      - run: |
+          find . -regex '^.*/build/reports/ktlint-results\.sarif$' -type f | while read file_path; do
+            reviewdog -f=sarif -reporter=github-pr-review < "$file_path"
+          done
+      - uses: MobSF/mobsfscan@main
+        with:
+          args: . --sarif --output '${{ runner.temp }}/mobsfscan-results.sarif'
+        continue-on-error: true
+        # 変更した行に関わらず checks でコメント. name で checks 名を指定
+      - run: reviewdog -f=sarif -reporter=github-pr-check -name='mobsfscan' -filter-mode=nofilter < '${{ runner.temp }}/mobsfscan-results.sarif'
+      - uses: JetBrains/qodana-action@v2023.3
+        with:
+          post-pr-comment: false # サマリ投稿は off
+          use-annotations: false # revoewdog でのコメントへ統一
+          additional-cache-key: 'qodana-2023.3-' # プルリク open 時にもキャッシュを適用させる. 前提として別の CI で main ブランチ等に cache があること
+          cache-default-branch-only: true # サイズが大きいのでプルリクの head ブランチでは cache を作らない
+      - run: reviewdog -f=sarif -reporter=github-pr-review < '${{ runner.temp }}/qodana/results/qodana.sarif.json'
